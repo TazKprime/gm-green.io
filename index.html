@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2E7D32">
+  <title>GM Green Advisory</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #e8f5e9;
+      font-size: 16px;
+      color: #212121;
+    }
+    .chat-container {
+      max-width: 480px;
+      margin: 0 auto;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+    @media (min-width: 481px) { body { background: #e8f5e9; } }
+    header {
+      position: sticky; top: 0;
+      background: white;
+      border-bottom: 1px solid #f0f0f0;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+    .header-left { display: flex; align-items: center; gap: 8px; }
+    .header-left button { background: none; border: none; padding: 8px; margin: -8px; cursor: pointer; }
+    .logo { width: 32px; height: 32px; border-radius: 50%; background: #E8F5E9; display: flex; align-items: center; justify-content: center; }
+    .logo svg { width: 18px; height: 18px; fill: #2E7D32; }
+    .header-title h1 { font-size: 16px; font-weight: 600; margin: 0; line-height: 1.2; }
+    .header-title .status { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #616161; }
+    .header-title .status span { width: 8px; height: 8px; border-radius: 50%; background: #4CAF50; }
+    .header-right button { width: 36px; height: 36px; border-radius: 50%; background: #E8F5E9; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    main { flex: 1; overflow-y: auto; padding-bottom: 16px; }
+    footer {
+      background: white;
+      border-top: 1px solid #f0f0f0;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-around;
+    }
+    footer button {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 8px 16px; background: none; border: none; color: #616161; cursor: pointer;
+    }
+    footer button span { font-size: 12px; margin-top: 4px; }
+    footer button.active { color: #2E7D32; }
+    .chat-bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; margin: 0 16px 8px; }
+    .chat-bubble.bot { background: #E8F5E9; border-bottom-left-radius: 4px; margin-right: auto; }
+    .chat-bubble.user { background: #2E7D32; color: white; border-bottom-right-radius: 4px; margin-left: auto; }
+    .quick-reply {
+      display: inline-block; padding: 8px 14px; background: #E8F5E9;
+      border: 1px solid #2E7D32; border-radius: 20px; color: #2E7D32;
+      font-size: 14px; font-weight: 500; cursor: pointer; margin: 4px;
+    }
+    .quick-reply:hover { background: #2E7D32; color: white; }
+    .card {
+      background: white; border-radius: 12px; padding: 16px;
+      margin: 0 16px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .primary-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: calc(100% - 32px); margin: 0 16px; padding: 14px 24px;
+      background: #2E7D32; color: white; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 600; cursor: pointer; min-height: 48px;
+    }
+    .primary-btn:disabled { background: #a5d6a7; cursor: not-allowed; }
+    .primary-btn:active { background: #1b5e20; }
+    .secondary-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: calc(100% - 32px); margin: 0 16px; padding: 14px 24px;
+      background: white; color: #2E7D32; border: 2px solid #2E7D32;
+      border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
+    }
+    .form-group { margin-bottom: 16px; padding: 0 16px; }
+    .form-group label { display: block; font-size: 14px; font-weight: 500; color: #616161; margin-bottom: 6px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px 16px; border: 1px solid #e0e0e0;
+      border-radius: 8px; font-size: 16px; outline: none; font-family: inherit;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: #2E7D32; }
+    .risk-tag {
+      display: inline-block; padding: 4px 12px; border-radius: 16px;
+      font-size: 12px; font-weight: 600; text-transform: uppercase;
+    }
+    .risk-low { background: #E8F5E9; color: #4CAF50; }
+    .risk-medium { background: #FFF3E0; color: #FF9800; }
+    .risk-high { background: #FFEBEE; color: #F44336; }
+    .progress-bar { height: 8px; background: #E8F5E9; border-radius: 4px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: #2E7D32; border-radius: 4px; transition: width 0.3s; }
+    .timeline-item { position: relative; padding-left: 24px; padding-bottom: 20px; border-left: 2px solid #E8F5E9; }
+    .timeline-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: -7px; top: 0;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #2E7D32; border: 2px solid white;
+    }
+    .timeline-item.done::before { background: #4CAF50; }
+    .table-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+    .table-row:last-child { border-bottom: none; font-weight: 700; color: #2E7D32; }
+    .tab-btn {
+      flex: 1; padding: 12px; border: none; background: transparent;
+      font-size: 14px; font-weight: 500; color: #616161; cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab-btn.active { color: #2E7D32; border-bottom-color: #2E7D32; }
+    .back-btn { display: flex; align-items: center; gap: 4px; padding: 8px; border: none; background: transparent; color: #616161; cursor: pointer; font-size: 14px; }
+    .back-btn:active { color: #2E7D32; }
+    .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .section-title { font-size: 20px; font-weight: 700; margin: 0 16px 8px; }
+    .section-subtitle { font-size: 14px; color: #616161; margin: 0 16px 16px; }
+    .icon-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; }
+    .sticky-input {
+      position: sticky; bottom: 0; background: white;
+      border-top: 1px solid #e0e0e0; padding: 12px 16px;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .sticky-input input {
+      flex: 1; padding: 12px 16px; border: 1px solid #e0e0e0;
+      border-radius: 24px; font-size: 16px; outline: none; font-family: inherit;
+    }
+    .sticky-input input:focus { border-color: #2E7D32; }
+    .bg-gm-green { background: #2E7D32; }
+    .text-gm-green { color: #2E7D32; }
+    .bg-gm-green-light { background: #E8F5E9; }
+    .hidden { display: none !important; }
+    .typing { display: flex; gap: 4px; padding: 12px 16px; }
+    .typing span { width: 8px; height: 8px; border-radius: 50%; background: #2E7D32; animation: bounce 1s infinite; }
+    .typing span:nth-child(2) { animation-delay: 0.15s; }
+    .typing span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  </style>
+</head>
+<body>
+  <div class="chat-container" id="app">
+    <header id="header">
+      <div class="header-left">
+        <button id="backBtn" class="hidden" onclick="goBack()">
+          <span class="material-icons">arrow_back</span>
+        </button>
+        <div class="logo">
+          <svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22L6.66 19.7C7.14 19.87 7.64 20 8 20C19 20 22 3 22 3C21 7 14 5.5 9 6.5C7 7 5 8 3 9.5C5.5 16 13 18 17 18L17 8Z"/></svg>
+        </div>
+        <div class="header-title">
+          <h1>GM Green Advisory</h1>
+          <div class="status"><span></span>online</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <button><span class="material-icons">add</span></button>
+      </div>
+    </header>
+    <main id="main"></main>
+    <footer id="footer">
+      <button onclick="navigate('welcome')" data-nav="welcome" class="active"><span class="material-icons">home</span><span>Home</span></button>
+      <button onclick="navigate('calendar')" data-nav="calendar"><span class="material-icons">calendar_today</span><span>Calendar</span></button>
+      <button onclick="navigate('summary')" data-nav="summary"><span class="material-icons">description</span><span>My Plan</span></button>
+      <button onclick="navigate('chat')" data-nav="chat"><span class="material-icons">chat</span><span>Help</span></button>
+    </footer>
+  </div>
+
+  <script>
+    const state = {
+      currentScreen: 'welcome',
+      history: [],
+      userData: { community: '', district: '', region: '', crop: '', acres: '', yieldPerAcre: '' },
+      activities: [
+        { id: 1, name: 'Land Preparation', start: 'May 25', end: 'Jun 04', status: 'pending' },
+        { id: 2, name: 'Planting', start: 'Jun 05', end: 'Jun 10', status: 'pending' },
+        { id: 3, name: 'Fertilizer Application', start: 'Jun 20', end: 'Jun 25', status: 'pending' },
+        { id: 4, name: 'Weed Control', start: 'Jun 20', end: 'Jul 05', status: 'pending' },
+        { id: 5, name: 'Pest Management', start: 'Jul 01', end: 'Jul 20', status: 'pending' },
+        { id: 6, name: 'Top Dressing', start: 'Jul 25', end: 'Jul 25', status: 'pending' },
+        { id: 7, name: 'Harvesting', start: 'Sep 25', end: 'Oct 10', status: 'pending' },
+      ],
+      selectedActivity: null,
+      messages: [],
+      plan: null,
+      marketPrice: { Maize: 0.80, Rice: 1.20, Soybean: 1.50, Sorghum: 0.70, Millet: 0.65 },
+      priceSource: 'default',
+      priceFetchStatus: ''
+    };
+
+    const ghanaLocations = {
+      regions: {
+        "Greater Accra Region": {
+          plantingWindow: { start: 'Apr 15', end: 'May 15', confidence: 82 },
+          riskLevel: 'Medium',
+          risks: [
+            { driver: 'Rainfall variability', level: 'High', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'High', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'High', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Medium', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Accra Metropolitan": ["Adabraka", "Asylum Down", "Cantonments", "East Legon", "Jamestown", "Labadi", "Labone", "Madina", "Nungua", "Osu", "Teshie"],
+            "Tema Metropolitan": ["Ashaiman", "Sakumono", "Tema Community 1", "Tema Community 5", "Tema Community 9", "Tema Community 18", "Tema Industrial Area", "Manhean"],
+            "Adentan Municipal": ["Adentan", "Frafraha", "Ayi Mensah", "Ogbojo", "Abokobi", "Dodowa"],
+            "Ga East Municipal": ["Accra New Town", "Achimota", "Agbogba", "Kwabenya", "Okpoi Gonno", "Taifa"],
+            "Ga West Municipal": ["Amasaman", "Pokuase", "Ofankor", "Dome", "Sowutuom", "Ablekuma"],
+            "Ga South Municipal": ["Weija", "Kasoa North", "Obom", "Kokrobite", "Bortianor", "Gomoa Pomadze"],
+            "Ga Central Municipal": ["Ablekuma Central", "Dansoman", "Domeabra", "Odorkor", "Kaneshie", "Abeka"],
+            "Ledzokuku Municipal": ["Teshie-Nungua", "Krowor", "Ledzokuku", "Nungua", "Sakumono"],
+            "Kpone Katamanso Municipal": ["Kpone", "Katamanso", "Osudoku", "Afienya", "Devtraco", "Community 25"],
+            "Ada East": ["Ada Foah", "Sege", "Kasseh", "Koluedor", "Battor", "Mepe"],
+            "Ada West": ["Aveyime", "Adidome", "Battor", "Juapong", "Volivo"],
+            "Ningo Prampram": ["Prampram", "Ningo", "Osudoku", "Dawhenya", "Afienya"],
+            "Shai Osudoku": ["Dodowa", "Kpong", "Akuse", "Akosombo", "Asihalor"],
+            "La Dade Kotopon Municipal": ["La", "Labadi", "Teshie", "Nungua", "Osu"],
+            "La Nkwantanang Madina Municipal": ["Madina", "Adenta", "Frafraha", "Abokobi", "Agbogba", "Kwabenya"]
+          }
+        },
+        "Ashanti Region": {
+          plantingWindow: { start: 'May 20', end: 'Jun 05', confidence: 88 },
+          riskLevel: 'Low',
+          risks: [
+            { driver: 'Rainfall variability', level: 'Low', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'Low', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'Medium', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Low', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Kumasi Metropolitan": ["Asokwa", "Asante Mampong", "Bantama", "Kejetia", "Kumasi Central", "Manhyia", "Oforikrom", "Suame", "Tafo"],
+            "Obuasi Municipal": ["Obuasi", "Adansi Heman", "Akrokerri", "Manso Nkwanta", "Binsere", "Bompata"],
+            "Ejisu Municipal": ["Ejisu", "Juaben", "Onwe", "Besease", "Fumesua", "Kwabre"],
+            "Bekwai Municipal": ["Bekwai", "Odumase", "Agogo", "Beponso", "Adansi", "Fomena"],
+            "Mampong Municipal": ["Mampong", "Nyamebekyere", "Nsuta", "Hwidiem", "Kronkoro"],
+            "Offinso Municipal": ["Offinso", "Nkenkaasu", "Aboagyere", "Kodie", "Abrepo", "Bonsu"],
+            "Bosomtwe": ["Kuntanase", "Abono", "Ankaase", "Brofoyedru", "Dompoase", "Abuontem"],
+            "Kwabere East": ["Adukrom", "Aboabogya", "Atimatim", "Kenyasi", "Foase"],
+            "Kwabere West": ["Akropong", "Adiembra", "Foase", "Nerebehi"],
+            "Afigya Kwabre South": ["Pramso", "Kuntanase", "Sofoline", "Abrepo"],
+            "Kwabre East": ["Mamponteng", "Kodie", "Adwumakase", "Esreso", "Kubease"],
+            "Sekyere Central": ["Agogo", "Effiduase", "Owuobi", "Nsuta", "Krobo"],
+            "Sekyere East": ["Effiduase", "Bodomase", "Konongo", "Odumase", "Kumawu"],
+            "Asante Akim Central Municipal": ["Konongo", "Odumase", "Juaben", "Agogo", "Saaman"],
+            "Asante Akim North": ["Agogo", "Bompata", "Saaman", "Kuntanase"],
+            "Asante Akim South": ["Juaso", "Akyem Tafo", "Akyem Oda", "New Juaben"]
+          }
+        },
+        "Northern Region": {
+          plantingWindow: { start: 'May 25', end: 'Jun 10', confidence: 85 },
+          riskLevel: 'Medium',
+          risks: [
+            { driver: 'Rainfall variability', level: 'Medium', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'Medium', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'Medium', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Medium', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Tamale Metropolitan": ["Bilpiela", "Choggu", "Gumani", "Lamashegu", "Nyankpala", "Sagnarigu", "Tamale Central", "Vittin", "Wamale"],
+            "Sagnarigu Municipal": ["Sagnarigu", "Kalpohini", "Nyanshegu", "Gurugu", "Pishigu", "Gumbihini"],
+            "Yendi Municipal": ["Yendi", "Bimbilla Road", "Nakpayili", "Nkpayili", "Sang", "Kpalbe", "Banie"],
+            "Nanumba North": ["Bimbilla", "Najong", "Makayili", "Wulensi", "Nakpayili"],
+            "Nanumba South": ["Wulensi", "Sambuli", "Cheyohi", "Nakpayili"],
+            "Savelugu Municipal": ["Savelugu", "Kumbumihagu", "Zoggu", "Kakpayili", "Nanton"],
+            "Nanton": ["Nanton", "Dingoni", "Kpemale", "Yipala", "Kasuliyili"],
+            "Karaga": ["Karaga", "Nabogu", "Gushiegu", "Zakarigu", "Dalanso"],
+            "Gushegu Municipal": ["Gushiegu", "Kpasalaga", "Lungni", "Nakpali", "Chereponi"],
+            "Kpandai": ["Kpandai", "Busunu", "Kpasa", "Makong", "Kafaba"],
+            "Zabzugu": ["Zabzugu", "Tatale", "Takpayili", "Nadowli", "Chereponi"],
+            "Tatale Sangule": ["Tatale", "Sangule", "Bassari", "Nakpayili"],
+            "Mion": ["Sang", "Gushiegu", "Nakpayili", "Diare"],
+            "Tolon": ["Tolon", "Kumbungu", "Nyong", "Gbungbaliga", "Wamale"],
+            "Kumbungu": ["Kumbungu", "Nyong", "Tolon", "Gbungbaliga"]
+          }
+        },
+        "Central Region": {
+          plantingWindow: { start: 'May 10', end: 'Jun 01', confidence: 84 },
+          riskLevel: 'Low',
+          risks: [
+            { driver: 'Rainfall variability', level: 'Medium', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'Low', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'Low', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Low', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Cape Coast Metropolitan": ["Cape Coast", "Abura", "Asebu", "Anomabo", "Moree", "Elmina", "Komenda"],
+            "Mankessim Municipal": ["Mankessim", "Saltpond", "Anomabo", "Abandze", "Esuehyia", "Jukwa"],
+            "Kasoa Municipal": ["Kasoa", "Awutu Beraku", "Nyanyano", "Akweley", "Gomoa Fetteh", "Asebu"],
+            "Ajumako Enyan Essiam": ["Ajumako", "Enyan Denkyira", "Essiam", "Breman Asikuma", "Jukwa"],
+            "Assin Central Municipal": ["Assin Fosu", "Assin Breku", "Assin North", "Kruwa"],
+            "Assin South": ["Assin Fosu", "Akropong", "Breku", "Assin Nyankomase"],
+            "Asikuma Odoben Brakwa": ["Asikuma", "Odoben", "Brakwa", "Nkum", "Forikrom"],
+            "Twifo Atti Morkwa": ["Twifo Praso", "Hemang", "Assin Foso", "Morkwa", "Opolease"],
+            "Effutu Municipal": ["Winneba", "Potsin", "Gyahadze", "Otoase"],
+            "Gomoa East": ["Dawurampong", "Akropong", "Gomoa Dawurampong", "Nyanyano", "Eshiem"],
+            "Gomoa West": ["Apam", "Gomoa Fetteh", "Akweley", "Afransi"],
+            "Mfantseman Municipal": ["Saltpond", "Anomabo", "Mankessim", "Abura", "Abandze"],
+            "Upper Denkyira East Municipal": ["Dunkwa on Offin", "Aborofo", "Tweapease", "Essamang"],
+            "Upper Denkyira West": ["Ewusijo", "Akantansu", "Ankwanda", "Essamang"],
+            "Hemang Lower Denkyira": ["Hemang", "Lower Denkyira", "Twifo Hemang", "Nyankumasi"]
+          }
+        },
+        "Eastern Region": {
+          plantingWindow: { start: 'May 15', end: 'Jun 01', confidence: 86 },
+          riskLevel: 'Low',
+          risks: [
+            { driver: 'Rainfall variability', level: 'Low', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'Medium', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'Low', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Low', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "New Juaben South Municipal": ["Koforidua", "Oyoko", "Effiduase", "Juaben", "Kade"],
+            "New Juaben North Municipal": ["Effiduase", "Juaben", "Ashanti Mampong", "Dankwa", "Bonkrong"],
+            "Kwahu West Municipal": ["Nkawkaw", "Atibie", "Mpraeso", "Obo", "Abene"],
+            "Kwahu East": ["Kwahu Tafo", "Adawso", "Asakraka", "Adukrom"],
+            "Kwahu North": ["Abetifi", "Nkwatia", "Pepease", "Kwahu Tafo"],
+            "Kwahu South": ["Aduamoa", "Nsutam", "Adeiso", "Asamankese"],
+            "Asuogyaman": ["Atimpoku", "Akosombo", "Akuse", "Asesewa", "Aveyime"],
+            "Birim Central Municipal": ["Oda", "Akim Oda", "New Abirem", "Osino", "Bepong"],
+            "Birim North": ["Suhum", "Akyem Manso", "Akyem Brakwa", "Asante Akim"],
+            "Birim South": ["Akwatia", "New Abirem", "Beposo", "Dadieso"],
+            "Suhum Municipal": ["Suhum", "Apedwa", "Kwabeng", "Anyinam", "Otwereso"],
+            "Atiwa East": ["Anyinam", "Akim Oda", "Kwabeng", "Atiwa", "Juapong"],
+            "Atiwa West": ["Kwabeng", "Anyinam", "Akyem", "Atiwa"],
+            "Akuapim North Municipal": ["Akropong", "Aburi", "Mampong", "Tutu", "Dawu"],
+            "Akuapim South Municipal": ["Aburi", "Mampong", "Obosomase", "Pokease"],
+            "Yilo Krobo Municipal": ["Somanya", "Odumase Krobo", "Kpone", "Asesewa"],
+            "Lower Manya Krobo Municipal": ["Odumase Krobo", "Akwamufie", "Asihalor", "Kpong"]
+          }
+        },
+        "Volta Region": {
+          plantingWindow: { start: 'Apr 20', end: 'May 20', confidence: 83 },
+          riskLevel: 'Medium',
+          risks: [
+            { driver: 'Rainfall variability', level: 'Medium', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'Medium', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'Medium', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Low', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Ho Municipal": ["Ho", "Ho Heve", "Agorviefe", "Bankoe", "Sokode", "Tsevie", "Adidome"],
+            "Hohoe Municipal": ["Hohoe", "Gbi", "Wegbe", "Lolobi", "Santrokofi", "Alavanyo"],
+            "Keta Municipal": ["Keta", "Anyako", "Abor", "Anlo", "Fenyi", "Nogokpo"],
+            "Ketu South Municipal": ["Aflao", "Denu", "Klikor", "Agbozume", "Bator", "Akatsi"],
+            "Ketu North Municipal": ["Dzodze", "Penyi", "Nobisi", "Bakpa"],
+            "Agotime Ziope": ["Kpetoe", "Agotime", "Tsibu", "Ziope"],
+            "Akatsi South": ["Akatsi", "Abor", "Fievie", "Aboteyman"],
+            "Akatsi North": ["Akatsi", "Dzodze", "Mepe", "Tadzewu"],
+            "Central Tongu": ["Adidome", "Mafi Kumase", "Battor", "Aveyime", "Volo"],
+            "South Tongu": ["Sogakope", "Tefle", "Mepe", "Aveyime"],
+            "North Tongu": ["Battor", "Juapong", "Volo", "Adidome", "Mepe"],
+            "Kadjebi": ["Kadjebi", "Nkonya", "Worawora", "Nkwanta"],
+            "Krachi East Municipal": ["Dambai", "Kete Krachi", "Kpassa", "Worawora"],
+            "Krachi West": ["Chindiri", "Kete Krachi", "Kpassa"],
+            "Nkwanta South Municipal": ["Nkwanta", "Brewaniase", "Kpassa", "Banda"],
+            "Nkwanta North": ["Nakpayili", "Bunkpurugu", "Kpandai", "Banda"]
+          }
+        },
+        "Western Region": {
+          plantingWindow: { start: 'Mar 15', end: 'May 15', confidence: 85 },
+          riskLevel: 'Low',
+          risks: [
+            { driver: 'Rainfall variability', level: 'Low', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'Low', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'Low', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Medium', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Sekondi Takoradi Metropolitan": ["Sekondi", "Takoradi", "Effia", "Kwesimintsim", "Essikado", "New Takoradi"],
+            "Prestea Huni Valley Municipal": ["Prestea", "Huni Valley", "Bondaye", "Bogoso", "Bronyibima"],
+            "Tarkwa Nsuaem Municipal": ["Tarkwa", "Nsuaem", "Nsuta", "Himan", "Aboso"],
+            "Ellembelle": ["Nkroful", "Ellembelle", "Anwia", "Aiyinase", "Bonyere"],
+            "Jomoro Municipal": ["Half Assini", "Tikobo", "Bonyere", "Awiebo", "Egyambra"],
+            "Evalue Ajomoro Gwira": ["Axim", "Atuabo", "Esiama", "Akwidaa", "Ajomoro"],
+            "Ahanta West Municipal": ["Agona Nkwanta", "Dixcove", "Busua", "Butre", "Akwidaa"],
+            "Mpohor": ["Mpohor", "Akyempim", "Ampatano", "Eguafo"],
+            "Wassa East": ["Daboase", "Twifo Mampong", "Dompim", "Esikyir", "Akyempim"],
+            "Wassa Amenfi Central": ["Wassa Akropong", "Asankrangwa", "Aimbi", "Asunafo"],
+            "Wassa Amenfi East Municipal": ["Manso Amenfi", "Akropong", "Asankrangwa", "Kojokrom"],
+            "Wassa Amenfi West": ["Wassa Manso", "Amoanda", "Asankrangwa"]
+          }
+        },
+        "Brong-Ahafo Region": {
+          plantingWindow: { start: 'May 20', end: 'Jun 05', confidence: 87 },
+          riskLevel: 'Low',
+          risks: [
+            { driver: 'Rainfall variability', level: 'Low', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'Medium', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'Low', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Low', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Sunyani Municipal": ["Sunyani", "Odumase", "Fiapre", "Atronie", "Nsapor"],
+            "Sunyani West": ["Odumase", "Nsapor", "Atronie", "Chiraa"],
+            "Berekum East Municipal": ["Berekum", "Ahyayem", "Dwenem", "Kona", "Jinijini"],
+            "Dormaa Central Municipal": ["Dormaa Ahenkro", "Asuofu", "Nkrankwanta", "Nsawkaw"],
+            "Dormaa East": ["Wamfie", "Adomfe", "Afrisikrom", "Akrodie"],
+            "Dormaa West": ["Nkrankwanta", "Nsawkaw", "Tain", "Suma Ahenkro"],
+            "Techiman Municipal": ["Techiman", "Tuobodom", "Offinso", "Tanoso", "Krobo"],
+            "Techiman North": ["Tanoso", "Tuobodom", "Offuman", "Asuofiri"],
+            "Tano North Municipal": ["Techimantia", "Duayaw Nkwanta", "Nsoatre", "Sampa"],
+            "Tano South Municipal": ["Bechem", "Kukuom", "Atronie", "Nsoatre"],
+            "Kintampo North Municipal": ["Kintampo", "Ahenfie", "Ntom", "Babiani"],
+            "Kintampo South": ["Jema", "Ntom", "Babiani", "Longoro"],
+            "Wenchi Municipal": ["Wenchi", "Nkaseim", "Amantin", "Bono Manso"],
+            "Nkoranza North": ["Nkoranza", "Ampoma", "Busunya", "Jema"],
+            "Nkoranza South Municipal": ["Nkoranza", "Busunya", "Ahiafor", "Ampoma"],
+            "Pru East": ["Yeji", "Kajaji", "Ajura", "Prang", "Woraso"],
+            "Pru West": ["Prang", "Aframso", "Brong Ahafo", "Kajaji"]
+          }
+        },
+        "Upper East Region": {
+          plantingWindow: { start: 'May 25', end: 'Jun 15', confidence: 82 },
+          riskLevel: 'High',
+          risks: [
+            { driver: 'Rainfall variability', level: 'High', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'High', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'High', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Medium', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Bolgatanga Municipal": ["Bolgatanga", "Zuarungu", "Bongo", "Sumbrungu", "Vea"],
+            "Bongo": ["Bongo", "Bongo Soe", "Namoo", "Zorkor", "Sherigu"],
+            "Builsa North Municipal": ["Sandema", "Builsa", "Gbedembilisi", "Kanjarga"],
+            "Builsa South": ["Fumbisi", "Kologo", "Chuchuliga", "Biuk"],
+            "Kassena Nankana Municipal": ["Navrongo", "Paga", "Kologu", "Kayoro"],
+            "Kassena Nankana West": ["Chiana", "Kayoro", "Mirigu", "Paga", "Sirigu"],
+            "Bawku Municipal": ["Bawku", "Garu", "Mognori", "Pusiga", "Zini"],
+            "Bawku West": ["Zebilla", "Binduri", "Gambaga", "Nalerigu"],
+            "Talensi": ["Tongo", "Balungu", "Nangodi", "Gorogo", "Pungu"],
+            "Nabdam": ["Nangodi", "Gorogo", "Pungu", "Tongo"],
+            "Garu": ["Garu", "Tempane", "Dagya", "Bawku West", "Bingo"],
+            "Tempane": ["Tempane", "Garu", "Mognori", "Sapeliga"]
+          }
+        },
+        "Upper West Region": {
+          plantingWindow: { start: 'May 25', end: 'Jun 15', confidence: 80 },
+          riskLevel: 'High',
+          risks: [
+            { driver: 'Rainfall variability', level: 'High', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'High', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'High', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Medium', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Wa Municipal": ["Wa", "Bamahu", "Busa", "Kperisi", "Ullo", "Nakori"],
+            "Wa East": ["Funsi", "Wechiau", "Bulenga", "Daffiama"],
+            "Wa West": ["Wechiau", "Daffiama", "Issa", "Manwe"],
+            "Jirapa Municipal": ["Jirapa", "Tarsor", "Piina", "Nandom", "Umullu"],
+            "Lawra Municipal": ["Lawra", "Nandom", "Fielmuo", "Dowine", "Katoo"],
+            "Nandom Municipal": ["Nandom", "Fielmuo", "Katoo", "Piina"],
+            "Lambussie Karni": ["Lambussie", "Karni", "Han", "Ko", "Eremon"],
+            "Sissala East Municipal": ["Tumu", "Pulima", "Sissala", "Najo", "Gwollu"],
+            "Sissala West": ["Gwollu", "Danko", "Hamile", "Kaleo"],
+            "Daffiama Bussie Issa": ["Daffiama", "Bussie", "Issa", "Wechiau"],
+            "Nadowli Kaleo": ["Nadowli", "Kaleo", "Babile", "Tizza"]
+          }
+        },
+        "Oti Region": {
+          plantingWindow: { start: 'May 01', end: 'Jun 01', confidence: 81 },
+          riskLevel: 'Medium',
+          risks: [
+            { driver: 'Rainfall variability', level: 'Medium', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'Medium', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'Medium', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Low', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Dambai Municipal": ["Dambai", "Oti Damanko", "Chinderi", "Borae"],
+            "Krachi East Municipal": ["Kete Krachi", "Kpassa", "Worawora", "Dambai"],
+            "Krachi Nchumuru": ["Chindiri", "Kpandai", "Nkwanta", "Banda"],
+            "Krachi West": ["Kete Krachi", "Chindiri", "Kpassa"],
+            "Nkwanta North": ["Nkwanta", "Nakpayili", "Kpandai", "Brewaniase"],
+            "Nkwanta South Municipal": ["Nkwanta", "Brewaniase", "Kpassa", "Kpandai"],
+            "Biakoye": ["Nkonya Ahenkro", "Nkonya Tayi", "Brewaniase", "Kwame Danso"],
+            "Jasikan": ["Jasikan", "Nkonya", "Kadjebi", "Brewaniase"]
+          }
+        },
+        "Bono East Region": {
+          plantingWindow: { start: 'May 15', end: 'Jun 01', confidence: 86 },
+          riskLevel: 'Low',
+          risks: [
+            { driver: 'Rainfall variability', level: 'Low', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'Medium', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'Low', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Low', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Techiman Municipal": ["Techiman", "Tuobodom", "Tanoso", "Krobo", "Asuofiri"],
+            "Techiman North": ["Tanoso", "Tuobodom", "Offuman", "Asuofiri"],
+            "Kintampo North Municipal": ["Kintampo", "Ahenfie", "Ntom", "Babiani"],
+            "Kintampo South": ["Jema", "Ntom", "Babiani", "Longoro"],
+            "Nkoranza North": ["Busunya", "Jema", "Mpasaso", "Nkoranza"],
+            "Nkoranza South Municipal": ["Nkoranza", "Busunya", "Ahiafor", "Ampoma"],
+            "Pru East": ["Yeji", "Kajaji", "Ajura", "Prang"],
+            "Pru West": ["Prang", "Aframso", "Kajaji"],
+            "Atebubu Amanten Municipal": ["Atebubu", "Amanten", "Ahoma", "Kajaji"],
+            "Sene East": ["Kwame Danso", "Yapei", "Kwadjokrom", "Tain"],
+            "Sene West": ["Kwadjokrom", "Kajaji", "Asutifi", "Tanoso"]
+          }
+        },
+        "Savanna Region": {
+          plantingWindow: { start: 'May 20', end: 'Jun 15', confidence: 79 },
+          riskLevel: 'High',
+          risks: [
+            { driver: 'Rainfall variability', level: 'High', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'High', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'High', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Medium', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Damongo Municipal": ["Damongo", "Busunu", "Mempeasem", "Laribanga"],
+            "Sawla Tuna Kalba": ["Sawla", "Tuna", "Kalba", "Gindabour"],
+            "Bole Municipal": ["Bole", "Tinga", "Sabuli", "Bamboi", "Longoro"],
+            "Central Gonja": ["Buipe", "Yapei", "Mandari", "Daboya"],
+            "East Gonja Municipal": ["Salaga", "Kpembe", "Makongo", "Nakpayili"],
+            "West Gonja Municipal": ["Damongo", "Mandari", "Kofikrom", "Laribanga"],
+            "North Gonja": ["Daboya", "Buipe", "Yapei", "Mandari"],
+            "North East Gonja": ["Kpembe", "Buipe", "Salaga", "Makongo"]
+          }
+        },
+        "North East Region": {
+          plantingWindow: { start: 'May 20', end: 'Jun 15', confidence: 80 },
+          riskLevel: 'High',
+          risks: [
+            { driver: 'Rainfall variability', level: 'High', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'High', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'High', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Medium', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Nalerigu Gambaga Municipal": ["Gambaga", "Nalerigu", "Janga", "Nakpayili"],
+            "Bunkpurugu Nyankpaw": ["Bunkpurugu", "Nakpayili", "Chereponi", "Konkomba"],
+            "Chereponi": ["Chereponi", "Pwalugu", "Nakpayili", "Tatale"],
+            "Yunyoo Nasuan": ["Yunyoo", "Nasuan", "Nakpayili", "Gambaga"],
+            "West Mamprusi Municipal": ["Walewale", "Janga", "Kpasalaga", "Nakpayili"],
+            "East Mamprusi Municipal": ["Gambaga", "Nalerigu", "Langbinsi", "Kpasalaga"]
+          }
+        },
+        "Ahafo Region": {
+          plantingWindow: { start: 'May 15', end: 'Jun 01', confidence: 87 },
+          riskLevel: 'Low',
+          risks: [
+            { driver: 'Rainfall variability', level: 'Low', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'Low', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'Low', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Low', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Asunafo North Municipal": ["Kukuom", "Hwidiem", "Sankore", "Akrodie", "Ahafo Ano"],
+            "Asunafo South": ["Kukuom", "Nkrankwanta", "Asumura", "Goaso"],
+            "Asutifi North": ["Kenyasi", "Mim", "Goaso", "Hwidiem"],
+            "Asutifi South": ["Kenyasi", "Ntotroso", "Goaso", "Mim"],
+            "Tano North Municipal": ["Techimantia", "Duayaw Nkwanta", "Nsoatre", "Sampa"],
+            "Tano South Municipal": ["Bechem", "Kukuom", "Atronie", "Nsoatre"]
+          }
+        },
+        "Western North Region": {
+          plantingWindow: { start: 'Apr 20', end: 'Jun 01', confidence: 84 },
+          riskLevel: 'Medium',
+          risks: [
+            { driver: 'Rainfall variability', level: 'Medium', source: 'CHIRPS + SMAP' },
+            { driver: 'Dry spell probability', level: 'Medium', source: 'MODIS + CHIRPS' },
+            { driver: 'Extreme heat days', level: 'Low', source: 'Landsat 9 Thermal' },
+            { driver: 'Pest outbreak risk', level: 'Medium', source: 'NDVI + MoFA' }
+          ],
+          districts: {
+            "Sefwi Wiawso Municipal": ["Sefwi Wiawso", "Asawinso", "Sefwi Bekwai", "Anhwiaso"],
+            "Bibiani Anhwiaso Bekwai Municipal": ["Bibiani", "Anhwiaso", "Bekwai", "Sefwi Bekwai"],
+            "Suaman": ["Dadieso", "Sefwi Asawinso", "Nkwanta", "Bodi"],
+            "Bia East": ["Bia", "Debiso", "Bodi", "Fiaman"],
+            "Bia West": ["Sefwi Bonkwa", "Dadieso", "Bodi", "Fiaman"],
+            "Aowin Municipal": ["Enchi", "Ayirebi", "Bawdie", "Kaase"],
+            "Juaboso": ["Juaboso", "Bonkwa", "Nkwanta", "Bodi"],
+            "Sefwi Akontombra": ["Akontombra", "Sefwi Dwuho", "Nkrankwanta", "Asafo"]
+          }
+        }
+      }
+    };
+
+    function getRegionData() {
+      const region = state.userData.region;
+      if (region && ghanaLocations.regions[region]) {
+        return ghanaLocations.regions[region];
+      }
+      return null;
+    }
+
+    const farmPlan = {
+      dataSources: {
+        satellite: ['Copernicus Sentinel-2 (NDVI)', 'NASA Landsat 9', 'MODIS Terra/Aqua'],
+        weather: ['CHIRPS Rainfall', 'NASA SMAP L4 (Soil Moisture)'],
+        official: ['MoFA Ghana Crop Data']
+      },
+      ndvi: { current: 0.72, trend: 'improving', status: 'Good vegetation health' },
+      rainfall: { last7days: 45, expected: 52, status: 'Slightly below average' },
+      soilMoisture: { level: 'Optimal', percent: 68 },
+      plantingWindow: { start: 'Jun 05', end: 'Jun 10', confidence: 82 },
+      daysToMaturity: 120,
+      harvestDate: 'Oct 01 - Oct 15',
+      budget: {
+        items: [
+          { name: 'Land Preparation', cost: 300 },
+          { name: 'Seed', cost: 280 },
+          { name: 'Fertilizer', cost: 600 },
+          { name: 'Pesticides', cost: 150 },
+          { name: 'Labour', cost: 320 },
+          { name: 'Others', cost: 150 }
+        ],
+        totalCost: 1800,
+        revenue: 3200,
+        profit: 1400
+      },
+      optimal: { yieldPerAcre: 2000, totalOutput: 4000, revenue: 3200, profit: 1400, profitMargin: 43.8, riskLevel: 'LOW' },
+      adverse: { yieldPerAcre: 1400, totalOutput: 2800, revenue: 2240, profit: 600, profitMargin: 21.4, riskLevel: 'HIGH' },
+      yieldEstimate: { perAcre: 2000, total: 4000, confidence: 78 },
+      risks: [
+        { driver: 'Rainfall variability', level: 'Medium', source: 'CHIRPS + SMAP' },
+        { driver: 'Dry spell probability', level: 'Medium', source: 'MODIS + CHIRPS' },
+        { driver: 'Extreme heat days', level: 'Low', source: 'Landsat 9 Thermal' },
+        { driver: 'Pest outbreak risk', level: 'Medium', source: 'NDVI + MoFA' }
+      ]
+    };
+    state.plan = farmPlan;
+
+    function updateRegion() {
+      const regionSelect = document.getElementById('regionSelect');
+      const districtSelect = document.getElementById('districtSelect');
+      const townSelect = document.getElementById('townSelect');
+      const selectedRegion = regionSelect.value;
+      
+      districtSelect.innerHTML = '<option value="">Select District</option>';
+      townSelect.innerHTML = '<option value="">Select Town/Community</option>';
+      
+      if (selectedRegion && ghanaLocations.regions[selectedRegion]) {
+        const districts = Object.keys(ghanaLocations.regions[selectedRegion].districts);
+        districts.forEach(d => {
+          districtSelect.innerHTML += `<option value="${d}">${d}</option>`;
+        });
+        districtSelect.disabled = false;
+      } else {
+        districtSelect.disabled = true;
+      }
+      townSelect.disabled = true;
+    }
+
+    function updateDistrict() {
+      const regionSelect = document.getElementById('regionSelect');
+      const districtSelect = document.getElementById('districtSelect');
+      const townSelect = document.getElementById('townSelect');
+      const selectedRegion = regionSelect.value;
+      const selectedDistrict = districtSelect.value;
+      
+      townSelect.innerHTML = '<option value="">Select Town/Community</option>';
+      
+      if (selectedRegion && selectedDistrict && ghanaLocations.regions[selectedRegion].districts[selectedDistrict]) {
+        const towns = ghanaLocations.regions[selectedRegion].districts[selectedDistrict];
+        towns.forEach(t => {
+          townSelect.innerHTML += `<option value="${t}">${t}</option>`;
+        });
+        townSelect.disabled = false;
+      } else {
+        townSelect.disabled = true;
+      }
+    }
+
+    function updateTown() {
+      state.userData.town = document.getElementById('townSelect').value;
+    }
+
+    function navigate(screen, addToHistory = true) {
+      if (addToHistory && state.currentScreen !== screen) {
+        state.history.push(state.currentScreen);
+      }
+      state.currentScreen = screen;
+      render();
+    }
+
+    function goBack() {
+      if (state.history.length > 0) {
+        state.currentScreen = state.history.pop();
+        render();
+      }
+    }
+
+    function updateUserData(key, value) {
+      state.userData[key] = value;
+    }
+
+    function toggleActivity(id) {
+      state.activities = state.activities.map(a => 
+        a.id === id ? { ...a, status: a.status === 'done' ? 'pending' : 'done' } : a
+      );
+      if (state.currentScreen === 'activity') render();
+      else navigate('activity');
+    }
+
+    const SCREENS = {
+      welcome: () => `
+        <div class="chat-bubble bot">Welcome to GM Green Advisory! Your AI-powered farming companion using satellite data and weather analytics.</div>
+        <div class="chat-bubble bot">I analyze Copernicus Sentinel-2, NASA Landsat, CHIRPS rainfall, and MoFA Ghana data to provide personalized crop planning, yield estimation, and expert agronomy advice.</div>
+        <div style="padding:12px 16px;background:#f0f5ff;border-radius:12px;margin:0 16px 16px">
+          <p style="font-size:11px;color:#1565C0;margin:0;text-align:center">
+            <span class="material-icons" style="font-size:12px;vertical-align:middle">satellite_alt</span>
+            Powered by: Sentinel-2 | Landsat 9 | MODIS | CHIRPS | SMAP | MoFA Ghana
+          </p>
+        </div>
+        <h2 class="section-title">What would you like to do?</h2>
+        <div style="padding: 0 16px;">
+          <button class="quick-reply" onclick="navigate('location')">
+            <span class="material-icons" style="vertical-align:middle;font-size:16px">grass</span> Plan New Farm
+          </button>
+          <button class="quick-reply" onclick="navigate('climate_risk')">
+            <span class="material-icons" style="vertical-align:middle;font-size:16px">warning</span> Climate Risk
+          </button>
+          <button class="quick-reply" onclick="navigate('calendar')">
+            <span class="material-icons" style="vertical-align:middle;font-size:16px">calendar_today</span> View Calendar
+          </button>
+          <button class="quick-reply" onclick="navigate('budget')">
+            <span class="material-icons" style="vertical-align:middle;font-size:16px">attach_money</span> Budget Planning
+          </button>
+          <button class="quick-reply" onclick="navigate('chat')">
+            <span class="material-icons" style="vertical-align:middle;font-size:16px">chat</span> Ask Expert
+          </button>
+          <button class="quick-reply" onclick="navigate('yield')">
+            <span class="material-icons" style="vertical-align:middle;font-size:16px">grass</span> Yield Estimate
+          </button>
+        </div>
+        <div class="card" style="margin-top: 16px;">
+          <h3 style="font-weight:600;color:#2E7D32;margin:0 0 8px">Satellite Field Analysis</h3>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+            <div style="padding:8px;background:#E8F5E9;border-radius:8px">
+              <p style="font-size:10px;color:#616161;margin:0">NDVI</p>
+              <p style="font-size:16px;font-weight:700;color:#2E7D32;margin:2px 0">0.72</p>
+            </div>
+            <div style="padding:8px;background:#E8F5E9;border-radius:8px">
+              <p style="font-size:10px;color:#616161;margin:0">Soil Moisture</p>
+              <p style="font-size:16px;font-weight:700;color:#2E7D32;margin:2px 0">68%</p>
+            </div>
+            <div style="padding:8px;background:#FFF3E0;border-radius:8px">
+              <p style="font-size:10px;color:#616161;margin:0">Rainfall 7d</p>
+              <p style="font-size:16px;font-weight:700;color:#FF9800;margin:2px 0">45mm</p>
+            </div>
+          </div>
+        </div>
+      `,
+
+      location: () => `
+        <div class="chat-bubble bot">Please share your location to get personalized farming advice for your area.</div>
+        <button class="primary-btn" onclick="handleGPS()">
+          <span class="material-icons">location_on</span> Use My Current Location
+        </button>
+        <div style="display:flex;align-items:center;gap:16px;padding:16px;">
+          <div style="flex:1;height:1px;background:#e0e0e0"></div>
+          <span style="font-size:14px;color:#616161">or</span>
+          <div style="flex:1;height:1px;background:#e0e0e0"></div>
+        </div>
+        <button class="secondary-btn" onclick="navigate('manual_location')">
+          <span class="material-icons">edit</span> Enter Location Manually
+        </button>
+      `,
+
+      manual_location: () => `
+        <div class="chat-bubble bot">Please select your farm location from the dropdowns below. You can also use GPS for automatic location detection.</div>
+        <div class="form-group">
+          <label>Region</label>
+          <select id="regionSelect" onchange="updateRegion(); updateUserData('region', this.value)">
+            <option value="">Select Region</option>
+            ${Object.keys(ghanaLocations.regions).map(r => `<option value="${r}">${r}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>District / Municipal / Metropolitan</label>
+          <select id="districtSelect" onchange="updateDistrict(); updateUserData('district', this.value)" disabled>
+            <option value="">Select District</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Town / Community</label>
+          <select id="townSelect" onchange="updateTown(); updateUserData('community', this.value)" disabled>
+            <option value="">Select Town/Community</option>
+          </select>
+        </div>
+        <div class="card" style="background:#f0f5ff;margin:0 16px 16px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="material-icons" style="color:#1565C0;font-size:18px">info</span>
+            <p style="font-size:12px;color:#1565C0;margin:0">Location helps us analyze satellite data specific to your farm area</p>
+          </div>
+        </div>
+        <button class="primary-btn" onclick="navigate('crop_details')">Confirm Location</button>
+      `,
+
+      crop_details: () => `
+        <div class="chat-bubble bot">Tell me about your farm so I can create a personalized plan for you.</div>
+        <div class="form-group">
+          <label>Crop Type</label>
+          <select onchange="updateUserData('crop', this.value)">
+            <option value="">Select Crop</option>
+            <option value="Maize">Maize</option>
+            <option value="Rice">Rice</option>
+            <option value="Soybean">Soybean</option>
+            <option value="Sorghum">Sorghum</option>
+            <option value="Millet">Millet</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Farm Size (Acres)</label>
+          <input type="number" placeholder="e.g., 2" min="0.5" max="100" onchange="updateUserData('acres', this.value)">
+        </div>
+        <div class="form-group">
+          <label>Expected Yield per Acre (kg) - Optional</label>
+          <input type="number" placeholder="e.g., 120" onchange="updateUserData('yieldPerAcre', this.value)">
+        </div>
+        <button class="primary-btn" onclick="generatePlan()">
+          Get Advisory <span class="material-icons">arrow_forward</span>
+        </button>
+      `,
+
+      planting_window: () => {
+        const regionData = getRegionData();
+        const window = regionData?.plantingWindow || farmPlan.plantingWindow;
+        return `
+        <div class="chat-bubble bot">Based on satellite data and weather analysis for ${state.userData.region || 'your region'}, here is your ideal planting window.</div>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="width:48px;height:48px;border-radius:50%;background:#E8F5E9;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:#2E7D32">calendar_today</span>
+            </div>
+            <div>
+              <h2 style="font-size:18px;font-weight:600;margin:0">Ideal Planting Window</h2>
+              <p style="font-size:14px;color:#616161;margin:0">${state.userData.region || 'Northern Region'} • ${state.userData.district || 'Tamale'}</p>
+            </div>
+          </div>
+          <div style="background:#E8F5E9;border-radius:12px;padding:16px;text-align:center;margin-bottom:16px;">
+            <span style="font-size:24px;font-weight:700;color:#2E7D32">${window.start}</span>
+            <span style="color:#616161;margin:0 8px">to</span>
+            <span style="font-size:24px;font-weight:700;color:#2E7D32">${window.end}</span>
+          </div>
+          <div style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px;">
+              <span style="color:#616161">Confidence Level</span>
+              <span style="font-weight:500;color:#2E7D32">${window.confidence}%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-bar-fill" style="width:${window.confidence}%"></div></div>
+          </div>
+          <div class="card" style="background:#f0f5ff;border:1px solid #e0e8ff;margin:12px -16px -16px;padding:12px;border-radius:0 0 12px 12px">
+            <h4 style="font-size:12px;font-weight:600;color:#1565C0;margin:0 0 8px">Satellite Data Sources</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              ${farmPlan.dataSources.satellite.map(s => `<span style="font-size:11px;background:#e0e8ff;color:#1565C0;padding:2px 8px;border-radius:10px">${s}</span>`).join('')}
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+              ${farmPlan.dataSources.weather.map(w => `<span style="font-size:11px;background:#e0f0ff;color:#0D47A1;padding:2px 8px;border-radius:10px">${w}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <span class="material-icons" style="color:#2E7D32;font-size:20px">satellite</span>
+            <h3 style="font-size:15px;font-weight:600;margin:0">Current Field Analysis</h3>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="padding:10px;background:#E8F5E9;border-radius:8px;text-align:center">
+              <p style="font-size:10px;color:#616161;margin:0">NDVI</p>
+              <p style="font-size:20px;font-weight:700;color:#2E7D32;margin:2px 0">${farmPlan.ndvi.current}</p>
+              <p style="font-size:10px;color:#2E7D32;margin:0">${farmPlan.ndvi.status}</p>
+            </div>
+            <div style="padding:10px;background:#E8F5E9;border-radius:8px;text-align:center">
+              <p style="font-size:10px;color:#616161;margin:0">Soil Moisture</p>
+              <p style="font-size:20px;font-weight:700;color:#2E7D32;margin:2px 0">${farmPlan.soilMoisture.percent}%</p>
+              <p style="font-size:10px;color:#2E7D32;margin:0">${farmPlan.soilMoisture.level}</p>
+            </div>
+            <div style="padding:10px;background:#FFF3E0;border-radius:8px;text-align:center;grid-column:1/-1">
+              <p style="font-size:10px;color:#616161;margin:0">7-Day Rainfall</p>
+              <p style="font-size:20px;font-weight:700;color:#FF9800;margin:2px 0">${farmPlan.rainfall.last7days}mm</p>
+              <p style="font-size:10px;color:#FF9800;margin:0">Expected: ${farmPlan.rainfall.expected}mm | ${farmPlan.rainfall.status}</p>
+            </div>
+          </div>
+        </div>
+        <button class="primary-btn" onclick="navigate('calendar')">
+          View Full Crop Calendar <span class="material-icons">arrow_forward</span>
+        </button>
+        `;
+      },
+
+      calendar: () => `
+        <div class="chat-bubble bot">Here is your complete crop calendar for the growing season.</div>
+        <div class="card">
+          <h2 style="font-size:18px;font-weight:600;margin:0 0 16px">Maize Growing Calendar 2026</h2>
+          ${state.activities.map(a => `
+            <div class="timeline-item ${a.status}">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                ${a.status === 'done' ? '<span class="material-icons" style="font-size:16px;color:#4CAF50">check_circle</span>' : '<span class="material-icons" style="font-size:16px;color:#616161">schedule</span>'}
+                <h3 style="font-size:15px;font-weight:500;margin:0">${a.name}</h3>
+              </div>
+              <p style="font-size:14px;color:#616161;margin:0">${a.start} — ${a.end}</p>
+              <button style="background:none;border:none;color:#2E7D32;font-size:14px;font-weight:500;padding:0;margin-top:8px;cursor:pointer" onclick="viewActivity(${a.id})">View Details →</button>
+            </div>
+          `).join('')}
+        </div>
+        <div style="display:flex;gap:8px;padding:0 16px;">
+          <button class="secondary-btn" style="flex:1;margin:0" onclick="navigate('budget')">View Budget</button>
+          <button class="primary-btn" style="flex:1;margin:0" onclick="navigate('scenario')">Scenario Modeling</button>
+        </div>
+      `,
+
+      activity: () => {
+        const a = state.selectedActivity || state.activities[0];
+        const details = {
+          1: { advice: ['Clear all vegetation and debris', 'Plough to 20-30cm depth', 'Harrow for fine tilth', 'Ensure proper drainage'], inputs: [{n:'Clearing Labour',q:'5 persons',c:150},{n:'Ploughing',q:'1 acre',c:100}] },
+          2: { advice: ['Plant at 80cm x 40cm spacing', 'Sow at 2-3cm depth', 'Use improved seed', '2 seeds per hill'], inputs: [{n:'Maize Seed',q:'10 kg',c:280},{n:'Labour',q:'3 persons',c:120}] },
+          3: { advice: ['Apply NPK 15-15-15 basal', 'Use 2 bags per acre', 'Apply at planting', 'Incorporate into soil'], inputs: [{n:'NPK 15-15-15',q:'2 bags',c:400},{n:'Urea',q:'1 bag',c:200}] },
+          4: { advice: ['First weeding at 2-3 weeks', 'Second weeding at 4-5 weeks', 'Use proper tools', 'Keep weed-free early'], inputs: [{n:'Weeding Labour',q:'4 persons x 2',c:200},{n:'Herbicide',q:'1 litre',c:80}] },
+          5: { advice: ['Monitor from 4th week', 'Scout twice weekly', 'Apply pesticide early', 'Use IPM practices'], inputs: [{n:'Pesticide',q:'500ml',c:80},{n:'FAW Control',q:'1 litre',c:100}] },
+          6: { advice: ['Apply before rainfall', 'Use urea 1 bag/acre', 'At 4-6 weeks after planting', 'Split application if possible'], inputs: [{n:'Urea',q:'1 bag',c:200},{n:'Labour',q:'2 persons',c:40}] },
+          7: { advice: ['Harvest when fully dry', 'Check moisture <15%', 'Harvest within 2 weeks', 'Dry before storage'], inputs: [{n:'Harvest Labour',q:'5 persons',c:150},{n:'Shelling',q:'2 bags',c:40}] }
+        }[a.id] || { advice: ['Detailed advice coming soon.'], inputs: [] };
+        return `
+          <div class="card">
+            <h2 style="font-size:18px;font-weight:600;margin:0 0 8px">${a.name}</h2>
+            <p style="font-size:14px;color:#616161;margin:0 0 16px">${a.start} — ${a.end}</p>
+            <h3 style="font-size:15px;font-weight:500;margin:0 0 8px">Agronomic Advice</h3>
+            <ul style="margin:0 0 16px;padding-left:20px;">
+              ${details.advice.map(i => `<li style="font-size:14px;margin-bottom:4px">${i}</li>`).join('')}
+            </ul>
+            ${details.inputs.length > 0 ? `
+              <h3 style="font-size:15px;font-weight:500;margin:0 0 8px">Inputs Needed</h3>
+              <div style="margin-bottom:16px;">
+                ${details.inputs.map(i => `
+                  <div style="display:flex;align-items:center;gap:8px;padding:8px;background:#f5f5f5;border-radius:8px;margin-bottom:8px;">
+                    <span class="material-icons" style="font-size:16px;color:#616161">inventory_2</span>
+                    <div style="flex:1"><span style="font-size:14px;font-weight:500">${i.n}</span><span style="font-size:12px;color:#616161;margin-left:4px">(${i.q})</span></div>
+                    <span style="font-size:14px;font-weight:500;color:#2E7D32">₵${i.c}</span>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+            <button style="width:100%;padding:12px;border-radius:12px;border:none;font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;${a.status === 'done' ? 'background:#4CAF50;color:white' : 'background:#E8F5E9;color:#2E7D32'}" onclick="toggleActivity(${a.id})">
+              <span class="material-icons">${a.status === 'done' ? 'check_circle' : 'check'}</span>
+              ${a.status === 'done' ? 'Completed' : 'Mark as Done'}
+            </button>
+          </div>
+          <button class="primary-btn" onclick="navigate('calendar')">
+            Back to Calendar <span class="material-icons">arrow_forward</span>
+          </button>
+        `;
+      },
+
+      budget: () => {
+        const crop = state.userData.crop || 'Maize';
+        const acres = parseFloat(state.userData.acres) || 2;
+        const yieldPerAcre = farmPlan.yieldEstimate?.perAcre || 2000;
+        const totalOutput = yieldPerAcre * acres;
+        const price = state.marketPrice[crop] || 0.80;
+        const revenue = Math.round(totalOutput * price);
+        const profit = revenue - farmPlan.budget.totalCost;
+        return `
+        <div class="chat-bubble bot">Here is your detailed crop budget. You can edit the market price or fetch the latest price.</div>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:#E8F5E9;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:#2E7D32">attach_money</span>
+            </div>
+            <h2 style="font-size:18px;font-weight:600;margin:0">Crop Budget</h2>
+          </div>
+          ${farmPlan.budget.items.map(i => `
+            <div class="table-row"><span>${i.name}</span><span style="font-weight:500">₵${i.cost}</span></div>
+          `).join('')}
+          <div class="table-row" style="border-top:2px solid #2E7D32">
+            <span style="font-weight:600">Total Cost</span>
+            <span style="font-weight:700;color:#2E7D32">₵${farmPlan.budget.totalCost}</span>
+          </div>
+        </div>
+
+        <!-- Market Price Editor -->
+        <div class="card" style="border:2px solid #2E7D32">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="material-icons" style="color:#2E7D32">edit</span>
+              <h3 style="font-weight:600;margin:0;font-size:15px">Market Price (₵/kg)</h3>
+            </div>
+            <button onclick="fetchLiveMarketPrice('${crop}')" id="fetchPriceBtn"
+              style="display:flex;align-items:center;gap:4px;padding:6px 12px;background:#E8F5E9;border:1px solid #2E7D32;border-radius:20px;color:#2E7D32;font-size:12px;font-weight:600;cursor:pointer;">
+              <span class="material-icons" style="font-size:14px">wifi</span> Fetch Live Price
+            </button>
+          </div>
+          <div id="priceFetchStatus" style="font-size:12px;color:#616161;margin-bottom:8px;">${state.priceFetchStatus}</div>
+          <div style="display:flex;align-items:center;gap:8px;background:#f5f5f5;border-radius:8px;padding:8px 12px;">
+            <span style="font-size:18px;font-weight:600;color:#2E7D32">₵</span>
+            <input type="number" id="marketPriceInput" value="${price}" min="0.1" max="50" step="0.01"
+              style="flex:1;border:none;background:transparent;font-size:22px;font-weight:700;color:#212121;outline:none;font-family:inherit;"
+              oninput="updateMarketPrice('${crop}', this.value)"
+            />
+            <span style="font-size:14px;color:#616161">/kg</span>
+          </div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span style="font-size:11px;color:#616161">Quick set:</span>
+            ${[0.60, 0.80, 1.00, 1.20, 1.50].map(p => `
+              <button onclick="setQuickPrice('${crop}', ${p})"
+                style="padding:2px 10px;border:1px solid #e0e0e0;border-radius:12px;background:${Math.abs(p-price)<0.01?'#2E7D32':'white'};color:${Math.abs(p-price)<0.01?'white':'#616161'};font-size:12px;cursor:pointer">
+                ₵${p}
+              </button>
+            `).join('')}
+          </div>
+          ${state.priceSource !== 'default' ? `<div style="margin-top:8px;padding:6px 10px;background:#f0f5ff;border-radius:6px;font-size:11px;color:#1565C0;">
+            <span class="material-icons" style="font-size:12px;vertical-align:middle">check_circle</span>
+            ${state.priceSource}
+          </div>` : ''}
+        </div>
+
+        <!-- Profit Estimation -->
+        <div class="card" style="background:#E8F5E9">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:#2E7D32">trending_up</span>
+            </div>
+            <div>
+              <h3 style="font-weight:600;margin:0">Profit Estimation</h3>
+              <p style="font-size:11px;color:#2E7D32;margin:0">Live calculation · updates as you edit price</p>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:12px;">
+            <div style="padding:10px;background:white;border-radius:8px;">
+              <p style="color:#616161;margin:0 0 2px">Yield/Acre</p>
+              <p style="font-weight:600;margin:0">${yieldPerAcre.toLocaleString()} kg</p>
+            </div>
+            <div style="padding:10px;background:white;border-radius:8px;">
+              <p style="color:#616161;margin:0 0 2px">Farm Size</p>
+              <p style="font-weight:600;margin:0">${acres} acres</p>
+            </div>
+            <div style="padding:10px;background:white;border-radius:8px;">
+              <p style="color:#616161;margin:0 0 2px">Total Output</p>
+              <p style="font-weight:600;margin:0">${totalOutput.toLocaleString()} kg</p>
+            </div>
+            <div style="padding:10px;background:white;border-radius:8px;">
+              <p style="color:#616161;margin:0 0 2px">Price Used</p>
+              <p style="font-weight:600;margin:0" id="displayedPrice">₵${price.toFixed(2)}/kg</p>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:white;border-radius:8px;margin-bottom:8px;">
+            <span style="color:#616161">Revenue</span>
+            <span style="font-weight:600;color:#2E7D32" id="calcRevenue">₵${revenue.toLocaleString()}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:white;border-radius:8px;margin-bottom:8px;">
+            <span style="color:#616161">Total Cost</span>
+            <span style="font-weight:600;color:#F44336">₵${farmPlan.budget.totalCost.toLocaleString()}</span>
+          </div>
+          <div style="padding:14px;background:#2E7D32;border-radius:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-weight:600;color:white;font-size:15px">Expected Profit</span>
+              <span style="font-size:24px;font-weight:700;color:white" id="calcProfit">₵${profit.toLocaleString()}</span>
+            </div>
+            <div style="margin-top:6px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,0.8);margin-bottom:3px;">
+                <span>Profit Margin</span>
+                <span id="calcMargin">${revenue > 0 ? ((profit/revenue)*100).toFixed(1) : 0}%</span>
+              </div>
+              <div style="height:4px;background:rgba(255,255,255,0.3);border-radius:2px;">
+                <div style="height:100%;background:white;border-radius:2px;width:${revenue > 0 ? Math.max(0,Math.min(100,(profit/revenue)*100)).toFixed(1) : 0}%" id="marginBar"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="primary-btn" onclick="navigate('scenario')">
+          View Scenario Modeling <span class="material-icons">arrow_forward</span>
+        </button>
+      `; },
+
+      scenario: () => `
+        <div class="chat-bubble bot">Model different scenarios to understand potential outcomes and risks for your farm.</div>
+        <div style="display:flex;border-bottom:1px solid #e0e0e0;margin:0 16px;">
+          <button class="tab-btn active" onclick="setTab('optimal')" id="tab-optimal">Optimal Conditions</button>
+          <button class="tab-btn" onclick="setTab('adverse')" id="tab-adverse">Adverse Conditions</button>
+        </div>
+        <div class="card" id="scenario-content">
+          <!-- Dynamic content -->
+        </div>
+        <button class="primary-btn" onclick="navigate('comparison')">
+          Compare Scenarios <span class="material-icons">arrow_forward</span>
+        </button>
+      `,
+
+      comparison: () => `
+        <div class="chat-bubble bot">Compare outcomes between optimal and adverse scenarios to make informed decisions.</div>
+        <div class="card" style="overflow-x:auto">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <span class="material-icons" style="color:#2E7D32">compare_arrows</span>
+            <h2 style="font-size:16px;font-weight:600;margin:0">Scenario Comparison</h2>
+          </div>
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:1px solid #e0e0e0">
+                <th style="text-align:left;padding:8px 0;font-size:14px;font-weight:500;color:#616161">Metric</th>
+                <th style="text-align:center;padding:8px 0;font-size:14px;font-weight:500;color:#2E7D32">Optimal</th>
+                <th style="text-align:center;padding:8px 0;font-size:14px;font-weight:500;color:#F44336">Adverse</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #f5f5f5"><td style="padding:10px 0;font-size:14px">Conditions</td><td style="text-align:center;font-size:14px">Normal rainfall</td><td style="text-align:center;font-size:14px;color:#F44336">Delay 20 days</td></tr>
+              <tr style="border-bottom:1px solid #f5f5f5"><td style="padding:10px 0;font-size:14px">Yield</td><td style="text-align:center;font-size:14px;font-weight:500">2,000 kg/acre</td><td style="text-align:center;font-size:14px;font-weight:500;color:#F44336">1,400 kg/acre</td></tr>
+              <tr style="border-bottom:1px solid #f5f5f5"><td style="padding:10px 0;font-size:14px">Total Output</td><td style="text-align:center;font-size:14px;font-weight:500">4,000 kg</td><td style="text-align:center;font-size:14px;font-weight:500;color:#F44336">2,800 kg</td></tr>
+              <tr style="border-bottom:1px solid #f5f5f5"><td style="padding:10px 0;font-size:14px">Revenue</td><td style="text-align:center;font-size:14px;font-weight:500">₵3,200</td><td style="text-align:center;font-size:14px;font-weight:500;color:#F44336">₵2,240</td></tr>
+              <tr style="border-bottom:1px solid #f5f5f5"><td style="padding:10px 0;font-size:14px">Profit</td><td style="text-align:center;font-size:14px;font-weight:500;color:#2E7D32">₵1,400</td><td style="text-align:center;font-size:14px;font-weight:500;color:#F44336">₵600</td></tr>
+              <tr style="border-bottom:1px solid #f5f5f5"><td style="padding:10px 0;font-size:14px">Profit Margin</td><td style="text-align:center;font-size:14px;font-weight:500">43.8%</td><td style="text-align:center;font-size:14px;font-weight:500;color:#F44336">21.4%</td></tr>
+              <tr><td style="padding:10px 0;font-size:14px">Risk Level</td><td style="text-align:center"><span class="risk-tag risk-low">LOW</span></td><td style="text-align:center"><span class="risk-tag risk-high">HIGH</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card" style="background:#FFEBEE;border:1px solid #F44336">
+          <div style="display:flex;align-items:flex-start;gap:8px;">
+            <span class="material-icons" style="color:#F44336">info</span>
+            <div>
+              <h4 style="font-weight:600;color:#F44336;margin:0 0 4px">Key Insight</h4>
+              <p style="font-size:14px;color:#212121;margin:0">Delaying planting beyond 10 June significantly reduces yield and profit and increases risk.</p>
+            </div>
+          </div>
+        </div>
+        <button class="primary-btn" onclick="navigate('yield')">
+          View Yield Estimation <span class="material-icons">arrow_forward</span>
+        </button>
+      `,
+
+      yield: () => `
+        <div class="chat-bubble bot">Based on NDVI analysis from satellite imagery and historical yield data, here is your estimated yield.</div>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:#2E7D32;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:white;font-size:28px">gps_fixed</span>
+            </div>
+            <div>
+              <h2 style="font-size:20px;font-weight:700;color:#2E7D32;margin:0">Satellite-Based Yield Estimation</h2>
+              <p style="font-size:14px;color:#616161;margin:0">${state.userData.acres || 2} acres of ${state.userData.crop || 'Maize'}</p>
+            </div>
+          </div>
+          <div style="text-align:center;margin-bottom:24px;">
+            <p style="font-size:48px;font-weight:700;color:#212121;margin:0">${farmPlan.yieldEstimate.perAcre.toLocaleString()}</p>
+            <p style="color:#616161;margin:0">kg per acre</p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+            <div style="padding:16px;background:#E8F5E9;border-radius:12px;text-align:center">
+              <span class="material-icons" style="color:#2E7D32">trending_up</span>
+              <p style="font-size:24px;font-weight:700;margin:4px 0">${farmPlan.yieldEstimate.total.toLocaleString()}</p>
+              <p style="font-size:12px;color:#616161;margin:0">Total Output (kg)</p>
+            </div>
+            <div style="padding:16px;background:#E8F5E9;border-radius:12px;text-align:center">
+              <span class="material-icons" style="color:#2E7D32">gps_fixed</span>
+              <p style="font-size:24px;font-weight:700;margin:4px 0">${farmPlan.yieldEstimate.confidence}%</p>
+              <p style="font-size:12px;color:#616161;margin:0">Confidence</p>
+            </div>
+          </div>
+          <div class="progress-bar"><div class="progress-bar-fill" style="width:${farmPlan.yieldEstimate.confidence}%"></div></div>
+          <p style="font-size:12px;color:#616161;margin:8px 0 0;text-align:center">High confidence based on Sentinel-2 NDVI + Landsat 9 analysis</p>
+          <div style="margin-top:12px;padding:10px;background:#f0f5ff;border-radius:8px;text-align:center">
+            <p style="font-size:11px;color:#1565C0;margin:0">Derived from: Copernicus Sentinel-2, NASA Landsat 9, MODIS Terra/Aqua + MoFA Ghana historical yields</p>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:14px;font-weight:600;margin:0 0 12px;display:flex;align-items:center;gap:8px">
+            <span class="material-icons" style="color:#2E7D32;font-size:18px">analytics</span>
+            NDVI Health Indicator
+          </h3>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="flex:1">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+                <span style="color:#616161">Current NDVI</span>
+                <span style="font-weight:600;color:#2E7D32">${farmPlan.ndvi.current}</span>
+              </div>
+              <div class="progress-bar"><div class="progress-bar-fill" style="width:${farmPlan.ndvi.current * 100}%"></div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;padding:4px 8px;background:#E8F5E9;border-radius:12px">
+              <span class="material-icons" style="font-size:14px;color:#2E7D32">trending_up</span>
+              <span style="font-size:11px;color:#2E7D32;font-weight:500">${farmPlan.ndvi.trend}</span>
+            </div>
+          </div>
+        </div>
+        <button class="primary-btn" onclick="navigate('risk')">
+          View Climate Risk <span class="material-icons">arrow_forward</span>
+        </button>
+      `,
+
+      risk: () => `
+        <div class="chat-bubble bot">Climate risk assessment powered by CHIRPS rainfall data, NASA SMAP soil moisture, and MODIS analysis for the next 120 days.</div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:48px;height:48px;border-radius:50%;background:#FFF3E0;display:flex;align-items:center;justify-content:center">
+                <span class="material-icons" style="color:#FF9800;font-size:24px">warning</span>
+              </div>
+              <div>
+                <h2 style="font-size:16px;font-weight:600;margin:0">Climate Risk Assessment</h2>
+                <p style="font-size:14px;color:#616161;margin:0">Next 120 days</p>
+              </div>
+            </div>
+            <span class="risk-tag risk-medium" style="font-size:14px;padding:6px 16px;">MEDIUM</span>
+          </div>
+          <div>
+            ${farmPlan.risks.map(r => `
+              <div style="padding:12px;background:#f5f5f5;border-radius:8px;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="width:32px;height:32px;border-radius:50%;${r.level === 'Medium' ? 'background:#FFF3E0' : 'background:#E8F5E9'};display:flex;align-items:center;justify-content:center">
+                      <span class="material-icons" style="font-size:18px;${r.level === 'Medium' ? 'color:#FF9800' : 'color:#4CAF50'}">${r.driver.toLowerCase().includes('rain') ? 'cloud' : r.driver.toLowerCase().includes('pest') ? 'bug_report' : 'thermostat'}</span>
+                    </div>
+                    <span style="font-weight:500;font-size:14px">${r.driver}</span>
+                  </div>
+                  <span class="risk-tag risk-${r.level.toLowerCase()}">${r.level}</span>
+                </div>
+                <p style="font-size:11px;color:#1565C0;margin:0;padding-left:40px">Source: ${r.source}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="card" style="background:#f0f5ff">
+          <h3 style="font-size:13px;font-weight:600;color:#1565C0;margin:0 0 8px;display:flex;align-items:center;gap:6px">
+            <span class="material-icons" style="font-size:16px">satellite_alt</span>
+            Data Integration Sources
+          </h3>
+          <div style="font-size:11px;color:#0D47A1;line-height:1.6">
+            <p style="margin:0 0 4px"><strong>Satellite Imagery:</strong> Copernicus Sentinel-2 (NDVI), NASA Landsat 9, MODIS Terra/Aqua</p>
+            <p style="margin:0 0 4px"><strong>Weather Data:</strong> CHIRPS Rainfall, NASA SMAP L4 Soil Moisture</p>
+            <p style="margin:0"><strong>Ground Truth:</strong> MoFA Ghana official crop data</p>
+          </div>
+        </div>
+        <button class="primary-btn" onclick="navigate('advisory')">
+          Get Expert Advice <span class="material-icons">arrow_forward</span>
+        </button>
+      `,
+
+      climate_risk: () => {
+        const regionData = getRegionData();
+        const risks = regionData?.risks || farmPlan.risks;
+        const riskLevel = regionData?.riskLevel || 'Medium';
+        const riskBadgeClass = riskLevel === 'High' ? 'risk-high' : riskLevel === 'Low' ? 'risk-low' : 'risk-medium';
+        return `
+        <div class="chat-bubble bot">Climate risk assessment for ${state.userData.region || 'your region'} powered by CHIRPS rainfall data, NASA SMAP soil moisture, and MODIS analysis for the next 120 days.</div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:48px;height:48px;border-radius:50%;background:#FFF3E0;display:flex;align-items:center;justify-content:center">
+                <span class="material-icons" style="color:#FF9800;font-size:24px">warning</span>
+              </div>
+              <div>
+                <h2 style="font-size:16px;font-weight:600;margin:0">Climate Risk Assessment</h2>
+                <p style="font-size:14px;color:#616161;margin:0">${state.userData.region || 'Northern Region'} • Next 120 days</p>
+              </div>
+            </div>
+            <span class="risk-tag ${riskBadgeClass}" style="font-size:14px;padding:6px 16px;">${riskLevel}</span>
+          </div>
+          <div>
+            ${risks.map(r => `
+              <div style="padding:12px;background:#f5f5f5;border-radius:8px;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="width:32px;height:32px;border-radius:50%;${r.level === 'High' ? 'background:#FFEBEE' : r.level === 'Medium' ? 'background:#FFF3E0' : 'background:#E8F5E9'};display:flex;align-items:center;justify-content:center">
+                      <span class="material-icons" style="font-size:18px;${r.level === 'High' ? 'color:#F44336' : r.level === 'Medium' ? 'color:#FF9800' : 'color:#4CAF50'}">${r.driver.toLowerCase().includes('rain') ? 'cloud' : r.driver.toLowerCase().includes('pest') ? 'bug_report' : 'thermostat'}</span>
+                    </div>
+                    <span style="font-weight:500;font-size:14px">${r.driver}</span>
+                  </div>
+                  <span class="risk-tag risk-${r.level.toLowerCase()}">${r.level}</span>
+                </div>
+                <p style="font-size:11px;color:#1565C0;margin:0;padding-left:40px">Source: ${r.source}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div class="card" style="background:#f0f5ff">
+          <h3 style="font-size:13px;font-weight:600;color:#1565C0;margin:0 0 8px;display:flex;align-items:center;gap:6px">
+            <span class="material-icons" style="font-size:16px">satellite_alt</span>
+            Data Integration Sources
+          </h3>
+          <div style="font-size:11px;color:#0D47A1;line-height:1.6">
+            <p style="margin:0 0 4px"><strong>Satellite Imagery:</strong> Copernicus Sentinel-2 (NDVI), NASA Landsat 9, MODIS Terra/Aqua</p>
+            <p style="margin:0 0 4px"><strong>Weather Data:</strong> CHIRPS Rainfall, NASA SMAP L4 Soil Moisture</p>
+            <p style="margin:0"><strong>Ground Truth:</strong> MoFA Ghana official crop data</p>
+          </div>
+        </div>
+        <button class="primary-btn" onclick="navigate('advisory')">
+          Get Expert Advice <span class="material-icons">arrow_forward</span>
+        </button>
+        `;
+      },
+
+      advisory: () => `
+        <div class="chat-bubble bot">Expert agronomy advice tailored to your current crop stage and local conditions.</div>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:#E8F5E9;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:#2E7D32">eco</span>
+            </div>
+            <h3 style="font-weight:600;margin:0">Agronomy Tip</h3>
+          </div>
+          <p style="font-size:14px;color:#616161;margin:0;line-height:1.5">Ensure timely weeding at 3-4 weeks after planting. Delayed weeding can reduce yield by up to 30%.</p>
+        </div>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:#FFF3E0;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:#FF9800">lightbulb</span>
+            </div>
+            <h3 style="font-weight:600;margin:0">Fertilizer Tip</h3>
+          </div>
+          <p style="font-size:14px;color:#616161;margin:0;line-height:1.5">Apply top dressing before expected rainfall. Urea works best when incorporated into moist soil within 2 days of application.</p>
+        </div>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:#FFEBEE;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:#F44336">bug_report</span>
+            </div>
+            <h3 style="font-weight:600;margin:0">Pest Alert</h3>
+          </div>
+          <p style="font-size:14px;color:#616161;margin:0;line-height:1.5">Monitor for stem borers from 4th week. Early detection and treatment can prevent up to 40% crop loss.</p>
+        </div>
+        <button class="primary-btn" onclick="navigate('summary')">
+          View My Plan Summary <span class="material-icons">arrow_forward</span>
+        </button>
+      `,
+
+      summary: () => `
+        <div class="chat-bubble bot">Your complete farm plan summary. Keep this handy for reference throughout the season.</div>
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:#E8F5E9;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:#2E7D32;font-size:28px">description</span>
+            </div>
+            <div>
+              <h2 style="font-size:20px;font-weight:700;margin:0">My Farm Plan</h2>
+              <p style="font-size:14px;color:#616161;margin:0">2026 Growing Season</p>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f5f5f5;border-radius:8px;margin-bottom:12px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:#E8F5E9;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:#2E7D32">check_circle</span>
+            </div>
+            <div style="flex:1">
+              <p style="font-size:12px;color:#616161;margin:0">Location</p>
+              <p style="font-weight:500;margin:0">${state.userData.community || 'Nyankpala'}, ${state.userData.district || 'Tamale'}</p>
+              <p style="font-size:12px;color:#616161;margin:0">${state.userData.region || 'Northern Region'}</p>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f5f5f5;border-radius:8px;margin-bottom:12px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:#E8F5E9;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:#2E7D32">calendar_today</span>
+            </div>
+            <div style="flex:1">
+              <p style="font-size:12px;color:#616161;margin:0">Planting Window</p>
+              <p style="font-weight:500;margin:0">Jun 05 - Jun 10</p>
+              <p style="font-size:12px;color:#616161;margin:0">Confidence: 78%</p>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f5f5f5;border-radius:8px;margin-bottom:12px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:#2E7D32;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:white">attach_money</span>
+            </div>
+            <div style="flex:1">
+              <p style="font-size:12px;color:#616161;margin:0">Estimated Profit</p>
+              <p style="font-weight:700;color:#2E7D32;margin:0">₵${farmPlan.budget.profit.toLocaleString()}</p>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f5f5f5;border-radius:8px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:#FFF3E0;display:flex;align-items:center;justify-content:center">
+              <span class="material-icons" style="color:#FF9800">warning</span>
+            </div>
+            <div style="flex:1">
+              <p style="font-size:12px;color:#616161;margin:0">Risk Level</p>
+              <span class="risk-tag risk-medium">MEDIUM</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;padding:0 16px;">
+          <button class="secondary-btn" style="flex:1;margin:0"><span class="material-icons">picture_as_pdf</span> Export PDF</button>
+          <button class="primary-btn" style="flex:1;margin:0" onclick="navigate('chat')">Get Support <span class="material-icons">arrow_forward</span></button>
+        </div>
+      `,
+
+      chat: () => `
+        <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+          <div style="padding:16px;">
+            <div class="chat-bubble bot">Hello! I'm your farming assistant. Ask me anything about your crop plan!</div>
+          </div>
+          <div id="chat-messages" style="flex:1;overflow-y:auto;padding:0 16px;"></div>
+          <div class="sticky-input">
+            <input type="text" id="chat-input" placeholder="Type your question..." onkeypress="if(event.key==='Enter')sendMessage()">
+            <button class="icon-btn" style="background:#E8F5E9"><span class="material-icons" style="color:#2E7D32">mic</span></button>
+            <button class="icon-btn" style="background:#2E7D32" onclick="sendMessage()"><span class="material-icons" style="color:white">send</span></button>
+          </div>
+        </div>
+      `
+    };
+
+    let currentTab = 'optimal';
+
+    function setTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      renderScenarioContent();
+    }
+
+    function renderScenarioContent() {
+      const m = farmPlan[currentTab];
+      const content = document.getElementById('scenario-content');
+      if (content) {
+        content.innerHTML = `
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <span class="material-icons" style="color:#2E7D32">bar_chart</span>
+            <h2 style="font-size:16px;font-weight:600;margin:0">${currentTab === 'optimal' ? 'Optimal Growing Conditions' : 'Adverse Conditions'}</h2>
+          </div>
+          <div style="padding:12px;background:#E8F5E9;border-radius:8px;margin-bottom:16px;">
+            <p style="font-size:14px;margin:0">${currentTab === 'optimal' ? 'Normal rainfall, Timely operations, Low pest pressure' : 'Rainfall delay 20 days, Late planting, High pest pressure'}</p>
+          </div>
+          <div style="border-bottom:1px solid #f0f0f0;padding:8px 0;display:flex;justify-content:space-between"><span style="color:#616161">Yield per Acre</span><span style="font-weight:500">${m.yieldPerAcre.toLocaleString()} kg</span></div>
+          <div style="border-bottom:1px solid #f0f0f0;padding:8px 0;display:flex;justify-content:space-between"><span style="color:#616161">Total Output</span><span style="font-weight:500">${m.totalOutput.toLocaleString()} kg</span></div>
+          <div style="border-bottom:1px solid #f0f0f0;padding:8px 0;display:flex;justify-content:space-between"><span style="color:#616161">Revenue</span><span style="font-weight:500">₵${m.revenue.toLocaleString()}</span></div>
+          <div style="border-bottom:1px solid #f0f0f0;padding:8px 0;display:flex;justify-content:space-between"><span style="color:#616161">Profit</span><span style="font-weight:500;color:#2E7D32">₵${m.profit.toLocaleString()}</span></div>
+          <div style="border-bottom:1px solid #f0f0f0;padding:8px 0;display:flex;justify-content:space-between"><span style="color:#616161">Profit Margin</span><span style="font-weight:500">${m.profitMargin}%</span></div>
+          <div style="padding:8px 0;display:flex;justify-content:space-between"><span style="color:#616161">Risk Level</span><span class="risk-tag risk-${currentTab === 'optimal' ? 'low' : 'high'}">${m.riskLevel}</span></div>
+        `;
+      }
+    }
+
+    function updateMarketPrice(crop, value) {
+      const price = parseFloat(value);
+      if (isNaN(price) || price <= 0) return;
+      state.marketPrice[crop] = price;
+      state.priceSource = 'Manually set';
+      // Recalculate displayed values live
+      const acres = parseFloat(state.userData.acres) || 2;
+      const yieldPerAcre = farmPlan.yieldEstimate?.perAcre || 2000;
+      const totalOutput = yieldPerAcre * acres;
+      const revenue = Math.round(totalOutput * price);
+      const profit = revenue - farmPlan.budget.totalCost;
+      const margin = revenue > 0 ? ((profit/revenue)*100).toFixed(1) : 0;
+      const el = (id) => document.getElementById(id);
+      if (el('calcRevenue')) el('calcRevenue').textContent = '₵' + revenue.toLocaleString();
+      if (el('calcProfit')) el('calcProfit').textContent = '₵' + profit.toLocaleString();
+      if (el('calcMargin')) el('calcMargin').textContent = margin + '%';
+      if (el('marginBar')) el('marginBar').style.width = Math.max(0, Math.min(100, parseFloat(margin))) + '%';
+      if (el('displayedPrice')) el('displayedPrice').textContent = '₵' + price.toFixed(2) + '/kg';
+    }
+
+    function setQuickPrice(crop, price) {
+      state.marketPrice[crop] = price;
+      state.priceSource = 'Manually set';
+      navigate('budget', false);
+    }
+
+    async function fetchLiveMarketPrice(crop) {
+      const btn = document.getElementById('fetchPriceBtn');
+      const statusEl = document.getElementById('priceFetchStatus');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-icons" style="font-size:14px;animation:spin 1s linear infinite">sync</span> Fetching...'; }
+      if (statusEl) statusEl.textContent = 'Connecting to market data...';
+
+      // Add spin animation
+      if (!document.getElementById('spinStyle')) {
+        const s = document.createElement('style');
+        s.id = 'spinStyle';
+        s.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+        document.head.appendChild(s);
+      }
+
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1000,
+            tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+            messages: [{
+              role: 'user',
+              content: `Search for the current market price of ${crop} in Ghana in 2025-2026. Find the price in Ghana Cedis (GHS) per kilogram from Ghana agricultural markets, MOFA Ghana, or commodity price sources. Return ONLY a JSON object like: {"price": 0.80, "unit": "GHS/kg", "source": "MOFA Ghana 2025", "note": "Brief market context"}`
+            }]
+          })
+        });
+
+        const data = await response.json();
+        const fullText = data.content.map(b => b.text || '').join('');
+
+        // Try to parse JSON from response
+        let priceData = null;
+        const jsonMatch = fullText.match(/\{[^}]*"price"[^}]*\}/);
+        if (jsonMatch) {
+          try { priceData = JSON.parse(jsonMatch[0]); } catch(e) {}
+        }
+
+        if (priceData && priceData.price && !isNaN(priceData.price)) {
+          state.marketPrice[crop] = parseFloat(priceData.price);
+          state.priceSource = `Live: ${priceData.source || 'Market data'} — ${priceData.note || ''}`;
+          state.priceFetchStatus = `✓ Updated to ₵${priceData.price}/kg from ${priceData.source || 'market data'}`;
+        } else {
+          // Fallback: try to extract any price number from the text
+          const priceMatch = fullText.match(/₵?\s*([\d.]+)\s*(?:per|\/)\s*kg/i) || fullText.match(/([\d.]+)\s*GHS\s*(?:per|\/)\s*kg/i);
+          if (priceMatch) {
+            const extracted = parseFloat(priceMatch[1]);
+            if (!isNaN(extracted) && extracted > 0.1 && extracted < 100) {
+              state.marketPrice[crop] = extracted;
+              state.priceSource = 'Live price from market search';
+              state.priceFetchStatus = `✓ Updated to ₵${extracted}/kg from market data`;
+            } else {
+              state.priceFetchStatus = '⚠ Could not parse price. Using current value.';
+            }
+          } else {
+            state.priceFetchStatus = '⚠ Price data unavailable. Using current value.';
+          }
+        }
+      } catch(err) {
+        state.priceFetchStatus = '⚠ Network error. Check connection and try again.';
+      }
+
+      navigate('budget', false);
+    }
+
+    function handleGPS() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(() => {
+          state.userData.region = 'Northern Region';
+          state.userData.district = 'Tamale';
+          state.userData.community = 'Nyankpala';
+          navigate('crop_details');
+        }, () => navigate('manual_location'));
+      } else {
+        navigate('manual_location');
+      }
+    }
+
+    function generatePlan() {
+      navigate('planting_window');
+    }
+
+    function viewActivity(id) {
+      state.selectedActivity = state.activities.find(a => a.id === id);
+      navigate('activity');
+    }
+
+    const CHAT_RESPONSES = {
+      fertilizer: "You should first apply fertilizer between 20 Jun - 25 Jun 2026. Apply NPK (15-15-15) at 2 bags (100kg) per acre as basal fertilizer at planting.",
+      weed: "First weeding should be done at 2-3 weeks after planting, and second weeding at 4-5 weeks after planting. Keeping the field weed-free in the early stages is crucial.",
+      pest: "Monitor for stem borers from the 4th week after planting. Scout fields at least twice weekly and apply recommended pesticide at early detection.",
+      harvest: "Harvest when cobs are fully matured and dry. Check moisture content should be below 15% before storage. Harvest within 2 weeks to avoid losses.",
+      default: "I'm here to help! Ask me about:\n• Fertilizer application\n• Weed control\n• Pest management\n• Harvesting tips\n• Budget planning\n• Planting dates\n\nWhat would you like to know?"
+    };
+
+    function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if (!msg) return;
+      
+      const messages = document.getElementById('chat-messages');
+      messages.innerHTML += `<div class="chat-bubble user"><p>${msg}</p></div>`;
+      messages.innerHTML += `<div class="typing"><span></span><span></span><span></span></div>`;
+      messages.scrollTop = messages.scrollHeight;
+      input.value = '';
+      
+      setTimeout(() => {
+        document.querySelector('.typing').remove();
+        let response = CHAT_RESPONSES.default;
+        const lower = msg.toLowerCase();
+        for (const [key, val] of Object.entries(CHAT_RESPONSES)) {
+          if (lower.includes(key)) { response = val; break; }
+        }
+        messages.innerHTML += `<div class="chat-bubble bot"><p>${response}</p></div>`;
+        messages.scrollTop = messages.scrollHeight;
+      }, 1000);
+    }
+
+    function render() {
+      const main = document.getElementById('main');
+      const footer = document.getElementById('footer');
+      const backBtn = document.getElementById('backBtn');
+      
+      document.querySelectorAll('footer button').forEach(btn => btn.classList.remove('active'));
+      const navBtn = document.querySelector(`footer button[data-nav="${state.currentScreen}"]`);
+      if (navBtn) navBtn.classList.add('active');
+      
+      const needsFooter = !['chat'].includes(state.currentScreen);
+      footer.style.display = needsFooter ? 'flex' : 'none';
+      
+      const needsBack = ['location', 'manual_location', 'crop_details', 'planting_window', 'calendar', 'activity', 'budget', 'scenario', 'comparison', 'yield', 'risk', 'advisory', 'summary'].includes(state.currentScreen);
+      backBtn.classList.toggle('hidden', !needsBack);
+      
+      if (state.currentScreen === 'welcome') {
+        backBtn.classList.add('hidden');
+      }
+      
+      if (SCREENS[state.currentScreen]) {
+        main.innerHTML = SCREENS[state.currentScreen]();
+      }
+      
+      if (state.currentScreen === 'scenario') {
+        renderScenarioContent();
+      }
+      
+      if (state.currentScreen === 'chat') {
+        setTimeout(() => document.getElementById('chat-input')?.focus(), 100);
+      }
+      
+      window.scrollTo(0, 0);
+    }
+
+    render();
+  </script>
+</body>
+</html>
